@@ -180,21 +180,16 @@ resource "helm_release" "hotel_reservation" {
   ]
 }
 
-# ── groundcover (eBPF observability — DaemonSet, no node changes needed) ─────
-
-resource "kubernetes_namespace" "groundcover" {
-  metadata {
-    name = "groundcover"
-  }
-  depends_on = [aws_eks_node_group.main]
-}
+# ── groundcover collector (eBPF sensor DaemonSet) ────────────────────────────
+# Self-serve backend already provisioned; this installs only the collector.
+# Token is from: app.groundcover.com → Settings → Clusters → Add Cluster
 
 resource "helm_release" "groundcover" {
   name             = "groundcover"
   repository       = "https://helm.groundcover.com/"
   chart            = "groundcover"
-  namespace        = kubernetes_namespace.groundcover.metadata[0].name
-  create_namespace = false
+  namespace        = "groundcover"
+  create_namespace = true
   timeout          = 300
 
   set_sensitive {
