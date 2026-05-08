@@ -1,0 +1,41 @@
+#!/bin/bash
+set -euxo pipefail
+
+# Base packages
+sudo dnf update -y
+sudo dnf install -y docker git curl
+
+# Docker daemon
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+
+# Docker Compose plugin
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -SL "https://github.com/docker/compose/releases/download/v2.29.7/docker-compose-linux-x86_64" -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# Clone repo
+sudo mkdir -p /opt/deathstarbench
+cd /opt/deathstarbench
+
+if [ ! -d DeathStarBench ]; then
+  sudo git clone --depth 1 --branch ${repo_branch} ${repo_url} DeathStarBench
+fi
+
+cd /opt/deathstarbench/DeathStarBench/${app_path}
+
+# Runtime env vars for compose
+sudo tee /etc/profile.d/hotel-reservation-env.sh > /dev/null <<EOF
+%{ for k, v in compose_env ~}
+export ${k}="${replace(v, "\"", "\\\"")}"
+%{ endfor ~}
+EOF
+
+# Pull and start services
+sudo -u ec2-user bash -lc '
+  set -euxo pipefail
+  source /etc/profile.d/hotel-reservation-env.sh || true
+  cd /opt/deathstarbench/DeathStarBench/${app_path}
+  docker compose -f ${docker_compose_file} pull || true
+  docker compose -f ${docker_compose_file} up -d --build
+'
