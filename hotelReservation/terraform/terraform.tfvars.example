@@ -1,25 +1,16 @@
-aws_region    = "us-east-1"
-project_name  = "deathstarbench-hotel-reservation"
-instance_type = "t3.large"
+aws_region   = "us-east-1"
+project_name = "hotel-reservation"
 
-# Restrict SSH to your IP/CIDR.
-ssh_cidr = "203.0.113.10/32"
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.10.0/24", "10.0.11.0/24"]
 
-# Restrict app/jaeger exposure as needed.
-allowed_ingress_cidrs = ["0.0.0.0/0"]
+# Restrict ALB access to your IP/CIDR.
+allowed_ingress_cidrs = ["203.0.113.10/32"]
 
-# Optional EC2 key pair for SSH.
-# key_name = "my-keypair"
-
-repo_url    = "https://github.com/cmurray1105/DeathStarBench.git"
-repo_branch = "master"
-app_path    = "hotelReservation"
-
-# Optional hotelReservation runtime env vars.
-docker_compose_env = {
-  TLS                 = "0"
-  GC                  = "100"
-  JAEGER_SAMPLE_RATIO = "0.01"
-  MEMC_TIMEOUT        = "2"
-  LOG_LEVEL           = "INFO"
-}
+# hotelReservation runtime config.
+tls                 = "0"
+gc                  = 100
+jaeger_sample_ratio = 0.01
+memc_timeout        = 2
+log_level           = "INFO"
