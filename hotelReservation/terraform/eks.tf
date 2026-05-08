@@ -144,3 +144,68 @@ resource "kubernetes_namespace" "hotel_reservation" {
 
   depends_on = [aws_eks_node_group.main]
 }
+
+# ── hotel-reservation app (existing Helm chart in the repo) ──────────────────
+# Uses only public Docker Hub images — no ECR build required.
+# review + attractions are skipped (require locally-built images).
+
+resource "helm_release" "hotel_reservation" {
+  name       = "hotel-reservation"
+  chart      = "${path.module}/../../helm-chart/hotelreservation"
+  namespace  = kubernetes_namespace.hotel_reservation.metadata[0].name
+  timeout    = 300
+
+  values = [yamlencode({
+    global = {
+      replicas        = 1
+      imagePullPolicy = "IfNotPresent"
+      mongodb = {
+        persistentVolume = { enabled = false }
+      }
+      services = {
+        environments = {
+          TLS                 = "0"
+          LOG_LEVEL           = var.log_level
+          JAEGER_SAMPLE_RATIO = tostring(var.jaeger_sample_ratio)
+          MEMC_TIMEOUT        = tostring(var.memc_timeout)
+          GC                  = tostring(var.gc_target)
+        }
+      }
+    }
+  })]
+
+  depends_on = [
+    aws_eks_node_group.main,
+    helm_release.aws_load_balancer_controller,
+  ]
+}
+
+# ── groundcover (eBPF observability — DaemonSet, no node changes needed) ─────
+
+resource "kubernetes_namespace" "groundcover" {
+  metadata {
+    name = "groundcover"
+  }
+  depends_on = [aws_eks_node_group.main]
+}
+
+resource "helm_release" "groundcover" {
+  name             = "groundcover"
+  repository       = "https://helm.groundcover.com/"
+  chart            = "groundcover"
+  namespace        = kubernetes_namespace.groundcover.metadata[0].name
+  create_namespace = false
+  timeout          = 300
+
+  set_sensitive {
+    name  = "global.groundcover_token"
+    value = var.groundcover_api_key
+  }
+
+  set {
+    name  = "global.clusterName"
+    value = aws_eks_cluster.main.name
+  }
+
+  depends_on = [aws_eks_node_group.main]
+}

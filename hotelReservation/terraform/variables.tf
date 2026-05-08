@@ -83,3 +83,37 @@ variable "helm_namespace" {
   type        = string
   default     = "hotel-reservation"
 }
+
+# ── App runtime ───────────────────────────────────────────────────────────────
+
+variable "log_level" {
+  description = "Log verbosity for hotel-reservation services (ERROR, WARNING, INFO, DEBUG)."
+  type        = string
+  default     = "INFO"
+}
+
+variable "jaeger_sample_ratio" {
+  description = "Fraction of requests sampled by Jaeger (0.0–1.0)."
+  type        = number
+  default     = 0.01
+}
+
+variable "memc_timeout" {
+  description = "Memcached timeout in seconds."
+  type        = number
+  default     = 2
+}
+
+variable "gc_target" {
+  description = "Go GC target percentage (GOGC)."
+  type        = number
+  default     = 100
+}
+
+# ── groundcover ───────────────────────────────────────────────────────────────
+
+variable "groundcover_api_key" {
+  description = "groundcover API key (token). Obtain from app.groundcover.com."
+  type        = string
+  sensitive   = true
+}

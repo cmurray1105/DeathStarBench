@@ -21,3 +21,13 @@ node_desired_size   = 3
 
 # ── Application ───────────────────────────────────────────────────────────────
 helm_namespace = "hotel-reservation"
+
+# ── App runtime ───────────────────────────────────────────────────────────────
+log_level           = "INFO"
+jaeger_sample_ratio = 0.01
+memc_timeout        = 2
+gc_target           = 100
+
+# ── groundcover ───────────────────────────────────────────────────────────────
+# Get your token from https://app.groundcover.com → Settings → API Keys
+groundcover_api_key = "YOUR_GROUNDCOVER_TOKEN"
