@@ -1,25 +1,23 @@
-aws_region    = "us-east-1"
-project_name  = "deathstarbench-hotel-reservation"
-instance_type = "t3.large"
+aws_region   = "us-east-1"
+project_name = "deathstarbench-hotel-reservation"
 
-# Restrict SSH to your IP/CIDR.
-ssh_cidr = "203.0.113.10/32"
+# ── Network ───────────────────────────────────────────────────────────────────
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
 
-# Restrict app/jaeger exposure as needed.
-allowed_ingress_cidrs = ["0.0.0.0/0"]
+# ── EKS Cluster ───────────────────────────────────────────────────────────────
+eks_version = "1.30"
 
-# Optional EC2 key pair for SSH.
-# key_name = "my-keypair"
+# Restrict API endpoint access to your CIDR.
+allowed_api_cidrs = ["203.0.113.10/32"]
 
-repo_url    = "https://github.com/cmurray1105/DeathStarBench.git"
-repo_branch = "master"
-app_path    = "hotelReservation"
+# ── Node Group ────────────────────────────────────────────────────────────────
+node_instance_types = ["m5.xlarge"]
+node_disk_size_gb   = 50
+node_min_size       = 2
+node_max_size       = 6
+node_desired_size   = 3
 
-# Optional hotelReservation runtime env vars.
-docker_compose_env = {
-  TLS                 = "0"
-  GC                  = "100"
-  JAEGER_SAMPLE_RATIO = "0.01"
-  MEMC_TIMEOUT        = "2"
-  LOG_LEVEL           = "INFO"
-}
+# ── Application ───────────────────────────────────────────────────────────────
+helm_namespace = "hotel-reservation"
